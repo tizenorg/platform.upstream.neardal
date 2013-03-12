@@ -1,7 +1,8 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
 <node>
-	<interface name="org.neard.Adapter">
+	<interface name="org.neard.Device">
 		<method name="GetProperties">
 			<arg name="properties" type="a{sv}" direction="out"/>
 		</method>
@@ -9,20 +10,12 @@
 			<arg name="name" type="s" direction="in"/>
 			<arg name="value" type="v" direction="in"/>
 		</method>
-		<method name="StartPollLoop">
-			<arg name="name" type="s" direction="in"/>
+		<method name="Push">
+			<arg name="attributes" type="a{sv}" direction="in"/>
 		</method>
-		<method name="StopPollLoop"/>
 		<signal name="PropertyChanged">
 			<arg name="name" type="s"/>
 			<arg name="value" type="v"/>
 		</signal>
-		<signal name="TagFound">
-			<arg name="address" type="o"/>
-		</signal>
-		<signal name="TagLost">
-			<arg name="address" type="o"/>
-		</signal>
 	</interface>
 </node>
-

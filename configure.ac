@@ -1,5 +1,6 @@
 AC_INIT([libneardal], [0.1.0])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
+
 AC_PROG_LIBTOOL
 AC_CONFIG_HEADERS([config.h])
 
@@ -10,7 +11,7 @@ CFLAGS="-W -Wall"
 ## Compiled in debug mode
 debug=yes
 ## Compiled with traces
-traces=yes
+traces=no
 
 AC_PROG_CC
 AM_PROG_CC_C_O
@@ -26,7 +27,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING([--disable-debug],
 ])
 
 if (test "${debug}" = "yes"); then
-	CFLAGS="$CFLAGS -g -O0"
+	CFLAGS="$CFLAGS -g -O0 -DNEARDAL_DEBUG"
  	echo 'NEARDAL will be compiled in debug mode. CFLAGS='${CFLAGS}
 else
 	CFLAGS="$CFLAGS -O2"
@@ -34,27 +35,30 @@ else
 fi
 
 ## Traces ?
-AC_ARG_ENABLE(traces, AC_HELP_STRING([--disable-traces],
-			[remove traces while compiling]), [
- 	if (test "${enableval}" = "no"); then
- 		traces=no
- 		echo 'NEARDAL will be compiled without traces... ('NEARDAL_TRACES' will not be defined)'
+AC_ARG_ENABLE(traces, AC_HELP_STRING([--enable-traces],
+			[add debugging traces while compiling]), [
+ 	if (test "${enableval}" = "yes"); then
+ 		traces=yes
  	fi
 ])
 if (test "${traces}" = "yes"); then
 	CFLAGS="$CFLAGS -DNEARDAL_TRACES"
- 	echo 'NEARDAL will be compiled with traces...('NEARDAL_TRACES' will be defined)'
+ 	echo 'NEARDAL will be compiled with debugging traces...('NEARDAL_TRACES' will be defined)'
+else
+	echo 'NEARDAL will be compiled without debugging traces... ('NEARDAL_TRACES' will not be defined)'
 fi
 
 ## Check dependances
-PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.22, dummy=yes,
-				AC_MSG_ERROR(GLib >= 2.22 is required))
+GLIB_REQUIRED=2.30.0
+PKG_CHECK_MODULES(GLIB, glib-2.0 >= $GLIB_REQUIRED, dummy=yes,
+				AC_MSG_ERROR(GLib >= $GLIB_REQUIRED is required))
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
-PKG_CHECK_MODULES(DBUS, dbus-glib-1, [have_dbus="yes"], [have_dbus="no"])
-AC_SUBST(DBUS_CFLAGS)
-AC_SUBST(DBUS_LIBS)
+PKG_CHECK_MODULES(GIO_UNIX, gio-unix-2.0 >= $GLIB_REQUIRED, dummy=yes,
+				AC_MSG_ERROR(gio-unix >= $GLIB_REQUIRED is required))
+AC_SUBST(GIO_UNIX_CFLAGS)
+AC_SUBST(GIO_UNIX_LIBS)
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";

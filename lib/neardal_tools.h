@@ -26,63 +26,47 @@ extern "C" {
 #endif	/* __cplusplus */
 
 
-/******************************************************************************
+/*****************************************************************************
+ * Debugging macro to manage assertion.
+ *****************************************************************************/
+#define NEARDAL_ASSERT(cond) do { \
+	if (!(cond)) { \
+		neardal_trace(stderr, "\nASSERT!! %s -> %s():l%d: cond=(%s)\n\n" \
+			, __FILE__, __func__, __LINE__, #cond); \
+		return; \
+	} \
+} while (0);
+
+#define NEARDAL_ASSERT_RET(cond, val) do { \
+	if (!(cond)) { \
+		neardal_trace(stderr, "\nASSERT!! %s -> %s():l%d: cond=(%s)\n\n" \
+			, __FILE__, __func__, __LINE__, #cond); \
+		return val; \
+	} \
+} while (0);
+
+/*****************************************************************************
  * neardal_tools_prv_free_gerror: freeing gerror in neardal context
  *****************************************************************************/
-void neardal_tools_prv_free_gerror(neardal_t neardalObj);
+void neardal_tools_prv_free_gerror(GError **gerror);
 
-/******************************************************************************
+/*****************************************************************************
  * neardal_tools_prv_cmp_path: Compare dbus path.
  * return true (<>0) if path is same, 0 otherwise
  *****************************************************************************/
 int neardal_tools_prv_cmp_path(const char *neardalPath, const char *reqPath);
 
 /******************************************************************************
- * neardal_tools_prv_hashtable_get: Parse a hashtable and get value of GType
- * 'type' with a specific key
+ * neardal_tools_prv_create_dict: Create a GHashTable for dict_entries.
  *****************************************************************************/
-errorCode_t neardal_tools_prv_hashtable_get(GHashTable *hashTable,
-					gconstpointer key, GType gtype,
-					void *value);
+GHashTable *neardal_tools_prv_create_dict(void);
 
 /******************************************************************************
- * neardal_tools_prv_create_proxy: create dbus proxy to Neard daemon
+ * neardal_tools_prv_add_dict_entry: add an entry in a dictionnary
  *****************************************************************************/
-errorCode_t neardal_tools_prv_create_proxy(DBusGConnection *conn,
-				       DBusGProxy **oProxy, const char *path,
-				       const char *iface);
-
-/******************************************************************************
- * neardal_marshal_VOID__STRING_BOXED: marshaller function for signal
- * invocations
- *****************************************************************************/
-void neardal_marshal_VOID__STRING_BOXED(GClosure	*closure,
-					 GValue		*return_value,
-					 guint		n_param_values,
-					 const GValue	*param_values,
-					 gpointer	invocation_hint,
-					 gpointer	marshal_data);
-
-/******************************************************************************
- * neardal_tools_prv__g_ptr_array_copy: duplicate a 'GPtrArray' array
- *****************************************************************************/
-void neardal_tools_prv_g_ptr_array_copy(GPtrArray **target, GPtrArray *source);
-
-/******************************************************************************
- * neardal_tools_prv_g_ptr_array_free: free a 'GPtrArray' array
- *****************************************************************************/
-void neardal_tools_prv_g_ptr_array_free(GPtrArray *array);
-
-/******************************************************************************
- * neardal_tools_create_dict: Create a GHashTable for dict_entries.
- *****************************************************************************/
-GHashTable *neardal_tools_create_dict(void);
-
-/******************************************************************************
- * neardal_tools_add_dict_entry: add an entry in a dictionnary
- *****************************************************************************/
-errorCode_t neardal_tools_add_dict_entry(GHashTable *hash, gchar *key,
-					  gchar *value);
+errorCode_t neardal_tools_prv_add_dict_entry(GVariantBuilder *builder
+					     , gchar *key, void *value
+					     , int gVariantType);
 
 #ifdef __cplusplus
 }

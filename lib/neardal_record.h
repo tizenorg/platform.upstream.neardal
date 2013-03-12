@@ -21,47 +21,53 @@
 #ifndef __NEARDAL_RECORD_H
 #define __NEARDAL_RECORD_H
 
+#include "neard_record_proxy.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif	/* __cplusplus */
 
-#define NEARD_RECORDS_IF_NAME		"org.neard.Record"
-#define NEARD_TGT_SIG_PROPCHANGED	"PropertyChanged"
-
 /* NEARDAL Record Properties */
 typedef struct {
-	DBusGProxy	*dbusProxy;	/* proxy to Neard NFC Record
-					interface */
-	char		*name;		/* DBus interface name
-					(as identifier) */
+	orgNeardRcd	*proxy;	/* proxy to Neard NFC Record interface */
+	gchar		*name;	/* DBus interface name (as identifier) */
+	void		*parent; /* parent (tag) */
+	gboolean	notified; /* Already notified to client? */
 
-	char		*encoding;
+	gchar		*encoding;
 	gboolean	handOver;
-	char		*language;
+	gchar		*language;
 	gboolean	smartPoster;
-	char		*action;
-	char		*type;
-	char		*representation;
-	char		*uri;
-	char		*mime;
+	gchar		*action;
+	gchar		*type;
+	gchar		*representation;
+	gchar		*uri;
+	gsize		uriObjSize;
+	gchar		*mime;
+	GVariant	*rawNDEF;
 } RcdProp;
 
-/******************************************************************************
+/*****************************************************************************
  * neardal_rcd_add: add new NFC record, initialize DBus Proxy connection,
  * register record signal
  *****************************************************************************/
-errorCode_t neardal_rcd_add(neardal_t neardalObj, char *rcdName);
+errorCode_t neardal_rcd_add(char *rcdName, void *parent);
 
-/******************************************************************************
+/*****************************************************************************
  * neardal_rcd_remove: remove NFC record, unref DBus Proxy connection,
  * unregister record signal
  *****************************************************************************/
 void neardal_rcd_remove(RcdProp *rcdProp);
 
-/******************************************************************************
+/*****************************************************************************
  * neardal_rcd_prv_format: Insert key/value in a GHashTable
  *****************************************************************************/
-errorCode_t neardal_rcd_prv_format(GHashTable ** hash, RcdProp *rcdProp);
+errorCode_t neardal_rcd_prv_format(GVariantBuilder *builder, RcdProp *rcd);
+
+/*****************************************************************************
+ * neardal_rcd_prv_free: unref DBus proxy, disconnect Neard Record signals
+ ****************************************************************************/
+void neardal_rcd_prv_free(RcdProp **rcd);
 
 #ifdef __cplusplus
 }

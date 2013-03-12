@@ -21,7 +21,9 @@
 #ifndef __NEARDAL_PRV_H
 #define __NEARDAL_PRV_H
 
+#include "neard_manager_proxy.h"
 #include "neardal_manager.h"
+#include "neardal_record.h"
 #include "neardal_tools.h"
 #include "neardal_traces_prv.h"
 #include "neardal.h"
@@ -31,49 +33,77 @@ extern "C" {
 #endif	/* __cplusplus */
 
 
-/* GType for Dict(string, variant) */
-#define DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH    (dbus_g_type_get_collection( \
-						"GPtrArray", \
-						DBUS_TYPE_G_OBJECT_PATH))
+/* NEARDAL Callbacks */
+typedef struct {
+	adapter_cb	adp_added;		/* Client callback for
+							'adapter added' */
+	void		*adp_added_ud;		/* User data for
+							client callback
+							'adapter added'*/
+	adapter_cb	adp_removed;		/* Client callback for
+							'adapter removed' */
+	void		*adp_removed_ud;	/* User data for
+							client callback
+							'adapter removed'*/
+	adapter_prop_cb	adp_prop_changed;	/* Client callback for
+						'adapter property changed' */
+	void		*adp_prop_changed_ud;	/* User data for
+							client callback
+						'adapter property changed' */
+
+	tag_cb		tag_found;		/* Client callback for
+							'tag found' */
+	void		*tag_found_ud;		/* User data for
+							client callback
+							'tag found' */
+	tag_cb		tag_lost;		/* Client callback for
+							'tag lost' */
+	void		*tag_lost_ud;		/* User data for
+							client callback
+							'tag lost' */
+
+	dev_cb		dev_found;		/* Client callback for
+							'device found' */
+	void		*dev_found_ud;		/* User data for
+							client callback
+							'device found' */
+	dev_cb		dev_lost;		/* Client callback for
+							'device lost' */
+	void		*dev_lost_ud;		/* User data for
+							client callback
+							'device lost' */
+
+	record_cb	rcd_found;		/* Client callback for
+						'	'tag record found'*/
+	void		*rcd_found_ud;		/* User data for
+							client callback
+							'tag record found'*/
+} neardalCb;
 
 /* NEARDAL context */
-typedef struct neardalCtx {
-	DBusGConnection	*conn;			/* The DBus connection */
-	DBusGProxy	*mgrProxy;		/* dbus proxy to Neard Mgr */
-	MgrProp		mgrProp;		/* Mgr Properties
-						(adapter list) */
-	adapter_cb	cb_adp_added;		/* Client callback for
-						'NEARDAL adapter added' */
-	void		*cb_adp_added_ud;	/* User data for client
-						callback 'adapter added'*/
-	adapter_cb	cb_adp_removed;		/* Client callback for
-						'NEARDAL adapter removed' */
-	void		*cb_adp_removed_ud;	/* User data for client
-						callback 'adapter removed'*/
-	adapter_prop_cb	cb_adp_prop_changed;	/* Client callback for
-						'adapter property changed' */
-	void		*cb_adp_prop_changed_ud;/* User data for client callback
-						'adapter property changed' */
+typedef struct {
+	neardalCb	cb;			/* Neardal Callbacks */
+	GDBusConnection	*conn;			/* DBus connection */
+	orgNeardMgr	*proxy;			/* Neard Mgr dbus proxy */
+	MgrProp		prop;			/* Mgr Properties
+							(adapter list) */
+	guint		OwnerId;		/* dbus Id server side */
+						/* (for neard agent Mgnt) */
+	GDBusObjectManagerServer *agentMgr;	/* Object 'agent' Manager */
 
-	target_cb	cb_tgt_found;		/* Client callback for
-						'NEARDAL target found' */
-	void		*cb_tgt_found_ud;	/* User data for client callback
-						'NEARDAL target found' */
-	target_cb	cb_tgt_lost;		/* Client callback for
-						'NEARDAL target lost' */
-	void		*cb_tgt_lost_ud;	/* User data for client callback
-						'NEARDAL target lost' */
-
-	record_cb	cb_rcd_found;		/* Client callback for
-						'NEARDAL target record found'*/
-	void		*cb_rcd_found_ud;	/* User data for client callback
-						'NEARDAL target record found'*/
-
-	errorCode_t	ec;			/* The last NEARDAL Library
-						error code */
-	GError		*gerror;		/* The last GError when
-						available */
+	errorCode_t	ec;		/* Lastest NEARDAL error */
+	GError		*gerror;	/* Lastest GError if available */
 } neardalCtx;
+
+extern neardalCtx neardalMgr;
+
+/*! \fn neardal_t neardal_prv_construct(errorCode_t *ec)
+*  \brief create NEARDAL object instance, Neard Dbus connection,
+* register Neard's events
+*  \param ec : optional, pointer to store error code
+*  \return the NEARDAL context
+*/
+void neardal_prv_construct(errorCode_t *ec);
 
 #ifdef __cplusplus
 }

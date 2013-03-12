@@ -21,55 +21,61 @@
 #ifndef __NEARDAL_ADAPTER_H
 #define __NEARDAL_ADAPTER_H
 
-#include "neardal_target.h"
+#include "neard_adapter_proxy.h"
+#include "neardal_device.h"
+#include "neardal_tag.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif	/* __cplusplus */
 
-#define NEARD_ADAPTERS_IF_NAME				"org.neard.Adapter"
-#define NEARD_ADP_SIG_PROPCHANGED			"PropertyChanged"
-#define NEARD_ADP_SIG_TGT_FOUND				"TargetFound"
-#define NEARD_ADP_SIG_TGT_LOST				"TargetLost"
+#define NEARD_ADP_SIG_PROPCHANGED			"property-changed"
+#define NEARD_ADP_SIG_TAG_FOUND				"tag-found"
+#define NEARD_ADP_SIG_TAG_LOST				"tag-lost"
 
 /* NEARDAL Adapter Properties */
 typedef struct {
-	DBusGProxy		*dbusProxy;	/* The proxy connected to Neard
+	orgNeardAdp		*proxy;		/* The proxy connected to Neard
 						Adapter interface */
-	char			*name;		/* DBus interface name
+	gchar			*name;		/* DBus interface name
 						(as id) */
+	gchar			*mode;		/* NFC radio mode */
+	void			*parent;
 	gboolean		polling;	/* adapter polling active ? */
 	gboolean		powered;	/* adapter powered ? */
-	char			**protocols;	/* protocols list */
-	GPtrArray		*tgtArray;	/* temporary storage */
-	GList			*tgtList;	/* Neard adapter targets list
+	gchar			**protocols;	/* protocols list */
+	gsize			lenProtocols;
+	gsize			tagNb;
+	GList			*tagList;	/* Neard adapter tags list
+						available */
+	gsize			devNb;
+	GList			*devList;	/* Neard adapter devices list
 						available */
 } AdpProp;
 
-/******************************************************************************
- * neardal_adp_prv_get_target: Get NEARDAL target from name
- *****************************************************************************/
-errorCode_t neardal_adp_prv_get_target(AdpProp *adpProp, char *tgtName,
-				       TgtProp **tgtProp);
+/*****************************************************************************
+ * neardal_adp_prv_get_tag: Get NEARDAL tag from name
+ ****************************************************************************/
+errorCode_t neardal_adp_prv_get_tag(AdpProp * adpProp, gchar *tagName,
+				       TagProp * *tagProp);
 
-/******************************************************************************
+/*****************************************************************************
+ * neardal_adp_prv_get_dev: Get NEARDAL dev from name
+ ****************************************************************************/
+errorCode_t neardal_adp_prv_get_dev(AdpProp * adpProp, gchar *devName,
+				       DevProp * *devProp);
+
+/*****************************************************************************
  * neardal_adp_add: add new NEARDAL adapter, initialize DBus Proxy
  * connection, register adapter signal
- *****************************************************************************/
-errorCode_t neardal_adp_add(neardal_t neardalObj, char *adapterName);
+ ****************************************************************************/
+errorCode_t neardal_adp_add(gchar *adapterName);
 
-/******************************************************************************
+/*****************************************************************************
  * neardal_adp_remove: remove NEARDAL adapter, unref DBus Proxy
  * connection, unregister adapter signal
- *****************************************************************************/
-errorCode_t neardal_adp_remove(neardal_t neardalObj, AdpProp *adpProp);
-
-/******************************************************************************
- * neardal_adp_publish: Creates and publish NDEF record to be written to
- * an NFC tag
- *****************************************************************************/
-errorCode_t neardal_adp_publish(AdpProp *adpProp, RcdProp *rcd);
-
+ ****************************************************************************/
+errorCode_t neardal_adp_remove(AdpProp *adpProp);
 
 #ifdef __cplusplus
 }
