@@ -5,6 +5,7 @@ AC_PROG_LIBTOOL
 AC_CONFIG_HEADERS([config.h])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 ## Default values
 CFLAGS="-W -Wall"
