@@ -26,6 +26,7 @@ BuildRequires: gettext-tools
 BuildRequires: python-xml
 BuildRequires: pkgconfig(glib-2.0) >= %{glib2_version}
 BuildRequires: pkgconfig(dbus-glib-1)
+BuildRequires: pkgconfig(dlog)
 
 %description
 This package provides simple C APIs to exchange datas with NFC daemon (Neard) present on the system.
