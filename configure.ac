@@ -61,6 +61,12 @@ PKG_CHECK_MODULES(GIO_UNIX, gio-unix-2.0 >= $GLIB_REQUIRED, dummy=yes,
 AC_SUBST(GIO_UNIX_CFLAGS)
 AC_SUBST(GIO_UNIX_LIBS)
 
+PKG_CHECK_MODULES(DLOG, dlog, dummy=yes, AC_MSG_ERROR(dlog is required))
+AC_SUBST(DLOG_CFLAGS)
+AC_SUBST(DLOG_LIBS)
+LDFLAGS="$LDFLAGS -ldlog"
+CFLAGS="$CFLAGS -I/usr/include/dlog"
+
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
    then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])

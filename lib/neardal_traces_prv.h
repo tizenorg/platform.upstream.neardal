@@ -22,6 +22,7 @@
 #define __NEARDAL_TRACES_PRV_H
 
 #include <stdio.h>
+#include <dlog.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,17 +42,16 @@ extern "C" {
 	"%s() : Processing...\n", __func__)
 #else
 
-	#define NEARDAL_TRACE(msg, ...)	(void)0
+	#define NEARDAL_TRACE(format, arg...) (LOG_ON() ? (LOG(LOG_DEBUG,  "NEARDAL", "%s:%s(%d)>" format, __MODULE__, __func__, __LINE__, ##arg)) : (0))
 	#define NEARDAL_TRACEDUMP(adr, size)	(void)0
 
-	#define NEARDAL_TRACEF(msg, ...)	(void)0
-	#define NEARDAL_TRACEIN()		(void)0
+	#define NEARDAL_TRACEF(format, arg...) (LOG_ON() ? (LOG(LOG_DEBUG,  "NEARDAL", "%s:%s(%d)>" format, __MODULE__, __func__, __LINE__, ##arg)) : (0))
+	#define NEARDAL_TRACEIN(format, arg...) (LOG_ON() ? (LOG(LOG_DEBUG,  "NEARDAL", "%s:%s(%d)>" format, __MODULE__, __func__, __LINE__, ##arg)) : (0))
 #endif /* NEARDAL_DEBUG */
+
 /* always defined */
-#define NEARDAL_TRACE_LOG(msg, ...)		neardal_trace(stdout, \
-				"%s() : " msg, __func__, ##__VA_ARGS__)
-#define NEARDAL_TRACE_ERR(msg, ...)		neardal_trace(stderr, \
-				"%s(ERR) : " msg, __func__, ##__VA_ARGS__)
+	#define NEARDAL_TRACE_LOG(format, arg...) (LOG_ON() ? (LOG(LOG_DEBUG,  "NEARDAL", "%s:%s(%d)>" format, __MODULE__, __func__, __LINE__, ##arg)) : (0))
+	#define NEARDAL_TRACE_ERR(format, arg...) (LOG_ON() ? (LOG(LOG_DEBUG,  "NEARDAL", "%s:%s(%d)>" format, __MODULE__, __func__, __LINE__, ##arg)) : (0))
 
 void neardal_trace(FILE *stream, char *format, ...);
 void neardal_trace_prv_dump_mem(char *dataP, int size);
