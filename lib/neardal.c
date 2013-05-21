@@ -244,6 +244,18 @@ errorCode_t neardal_set_cb_record_found(record_cb cb_rcd_found,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_power_completed(power_cb cb_power_completed,
+					void *user_data)
+{
+	neardalMgr.cb.power_completed		= cb_power_completed;
+	neardalMgr.cb.power_completed_ud	= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 /*****************************************************************************
  * neardal_free_array: free adapters array, tags array or records array
  ****************************************************************************/
@@ -484,6 +496,41 @@ exit:
 	return err;
 }
 
+static void power_completed_cb(GObject *source_object,
+					GAsyncResult *res, gpointer user_data)
+{
+	errorCode_t	err		= NEARDAL_SUCCESS;
+	AdpProp		*adpProp	= NULL;
+
+	NEARDAL_TRACE("Power Completed!");
+	err = neardal_mgr_prv_get_adapter((gchar *) user_data, &adpProp);
+	if (err != NEARDAL_SUCCESS)
+		goto exit;
+
+	if (adpProp->proxy == NULL) {
+		NEARDAL_TRACE("adapter proxy is null");
+		err = NEARDAL_ERROR_NO_ADAPTER;
+		goto exit;
+	}
+
+	org_neard_adp__call_set_property_finish(adpProp->proxy,
+						res, &neardalMgr.gerror);
+	if (neardalMgr.gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+			"DBUS Error (%d): %s\n",
+				 neardalMgr.gerror->code,
+				neardalMgr.gerror->message);
+		err = NEARDAL_ERROR_DBUS;
+	}
+
+exit:
+	if (neardalMgr.cb.power_completed != NULL)
+		neardalMgr.cb.power_completed(err,
+					neardalMgr.cb.power_completed_ud);
+
+	g_free(user_data);
+}
+
 /*****************************************************************************
  * neardal_set_adapter_property: Set a property on a specific NEARDAL adapter
  ****************************************************************************/
@@ -495,6 +542,7 @@ errorCode_t neardal_set_adapter_property(const char *adpName,
 	const gchar	*propKey	= NULL;
 	GVariant	*propValue	= NULL;
 	GVariant	*variantTmp	= NULL;
+	gchar		*user_data	= NULL;
 
 	if (neardalMgr.proxy == NULL)
 		neardal_prv_construct(&err);
@@ -518,20 +566,12 @@ errorCode_t neardal_set_adapter_property(const char *adpName,
 	propValue = g_variant_new_variant(variantTmp);
 	NEARDAL_TRACE_LOG("Sending:\n%s=%s\n", propKey,
 			  g_variant_print(propValue, TRUE));
-	org_neard_adp__call_set_property_sync(adpProp->proxy, propKey,
-					      propValue, NULL,
-					      &neardalMgr.gerror);
 
+	user_data = g_strdup(adpName);
+	org_neard_adp__call_set_property(adpProp->proxy, propKey,
+					propValue, NULL, power_completed_cb,
+					user_data);
 
-	if (neardalMgr.gerror == NULL)
-		err = NEARDAL_SUCCESS;
-	else {
-		NEARDAL_TRACE_ERR(
-			"DBUS Error (%d): %s\n",
-				 neardalMgr.gerror->code,
-				neardalMgr.gerror->message);
-		err = NEARDAL_ERROR_DBUS_INVOKE_METHOD_ERROR;
-	}
 
 exit:
 	neardal_tools_prv_free_gerror(&neardalMgr.gerror);
