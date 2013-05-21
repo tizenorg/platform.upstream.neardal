@@ -78,6 +78,8 @@ typedef struct {
 	void		*rcd_found_ud;		/* User data for
 							client callback
 							'tag record found'*/
+	power_cb	power_completed;
+	void		*power_completed_ud;
 } neardalCb;
 
 /* NEARDAL context */

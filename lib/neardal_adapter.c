@@ -210,6 +210,12 @@ static void neardal_adp_prv_cb_property_changed(orgNeardAdp *proxy,
 		NEARDAL_TRACEF("neardalMgr.polling=%d\n", adpProp->polling);
 	}
 
+	if (!strcmp(arg_unnamed_arg0, "Powered")) {
+		adpProp->powered = g_variant_get_boolean(gvalue);
+		clientValue = GUINT_TO_POINTER(adpProp->powered);
+		NEARDAL_TRACEF("neardalMgr.powered=%d\n", adpProp->powered);
+	}
+
 	if (!strcmp(arg_unnamed_arg0, "Tags")) {
 		guint tmpLen;
 
