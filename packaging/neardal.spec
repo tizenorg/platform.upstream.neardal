@@ -92,4 +92,4 @@ rm -rf %{buildroot}
 %{neardal_pkg}/neardal.pc
 
 %files ncl
-%{_bindir}/ncl
+#%{_bindir}/ncl
