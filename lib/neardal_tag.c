@@ -238,11 +238,35 @@ errorCode_t neardal_tag_prv_get_record(TagProp *tagProp, gchar *rcdName,
 	return err;
 }
 
+static void read_completed_cb(GObject *source_object,
+				GAsyncResult *res, gpointer user_data)
+{
+	GError		*gerror		= NULL;
+	GVariant	*ret		= NULL;
+	NEARDAL_TRACE("Read Completed!");
+
+	ret = g_dbus_proxy_call_finish(G_DBUS_PROXY(source_object),
+							res, &gerror);
+
+	if (gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+		"Unable to read tag's NDEF as a raw bytes stream(%d:%s)\n",
+				 gerror->code, gerror->message);
+		g_error_free(gerror);
+		return;
+	}
+
+	if (neardalMgr.cb.read_completed != NULL)
+		neardalMgr.cb.read_completed(ret,
+				neardalMgr.cb.read_completed_ud);
+
+	g_variant_unref(ret);
+}
+
 /*****************************************************************************
  * neardal_tag_prv_get_raw_NDEF: Get Neard Tag's NDEF as a raw bytes stream
  ****************************************************************************/
-errorCode_t neardal_tag_prv_get_raw_NDEF(TagProp *tagProp, char **rawNDEF
-					 , gsize *len)
+errorCode_t neardal_tag_prv_get_raw_NDEF(TagProp *tagProp)
 {
 	errorCode_t	err		= NEARDAL_SUCCESS;
 	GError		*gerror		= NULL;
@@ -251,41 +275,14 @@ errorCode_t neardal_tag_prv_get_raw_NDEF(TagProp *tagProp, char **rawNDEF
 	char		*raw;
 
 	NEARDAL_TRACEIN();
-	NEARDAL_ASSERT_RET((tagProp != NULL) && (rawNDEF != NULL)
+	NEARDAL_ASSERT_RET((tagProp != NULL)
 			  , NEARDAL_ERROR_INVALID_PARAMETER);
 	NEARDAL_ASSERT_RET(tagProp->proxy != NULL
 			  , NEARDAL_ERROR_GENERAL_ERROR);
 
-	if (org_neard_tag__call_get_raw_ndef_sync_v(tagProp->proxy, &array, len
-						    , NULL, &gerror) != TRUE)
-		return NEARDAL_ERROR_DBUS;
+	org_neard_tag__call_get_raw_ndef(tagProp->proxy, NULL,
+					read_completed_cb, NULL);
 
-	if (gerror != NULL) {
-		err = NEARDAL_ERROR_DBUS_CANNOT_INVOKE_METHOD;
-		NEARDAL_TRACE_ERR(
-		"Unable to read tag's NDEF as a raw bytes stream(%d:%s)\n",
-				 gerror->code, gerror->message);
-		g_error_free(gerror);
-		goto exit;
-	}
-
-	arraySize = *len;
-
-	NEARDAL_TRACEDUMP((char *) array, *len);
-
-	if (arraySize > 0) {
-		raw = g_try_malloc0(arraySize);
-		memcpy(raw, array, arraySize);
-		*rawNDEF = raw;
-	} else {
-		*rawNDEF = NULL;
-		*len = 0;
-	}
-
-	NEARDAL_TRACEF("Reading tag's NDEF raw bytes successfull! (len=%d)\n"
-		       , arraySize);
-
-exit:
 	return err;
 }
 
@@ -338,6 +335,27 @@ void neardal_tag_notify_tag_found(TagProp *tagProp)
 		}
 }
 
+static void write_completed_cb(GObject *source_object,
+					GAsyncResult *res, gpointer user_data)
+{
+	errorCode_t	err = NEARDAL_SUCCESS;
+	NEARDAL_TRACE("Write Completed!");
+
+	g_dbus_proxy_call_finish(G_DBUS_PROXY(source_object),
+					res, &neardalMgr.gerror);
+	if (neardalMgr.gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+			"DBUS Error (%d): %s\n",
+				 neardalMgr.gerror->code,
+				neardalMgr.gerror->message);
+		err = NEARDAL_ERROR_DBUS;
+	}
+
+	if (neardalMgr.cb.write_completed != NULL)
+		neardalMgr.cb.write_completed(err,
+				neardalMgr.cb.write_completed_ud);
+}
+
 /*****************************************************************************
  * neardal_tag_prv_write: Creates and write NDEF record to be written to a NFC
  * tag
@@ -362,7 +380,8 @@ errorCode_t neardal_tag_prv_write(TagProp *tagProp, RcdProp *rcd)
 
 	in = g_variant_builder_end(builder);
 	NEARDAL_TRACEF("Sending:\n%s\n", g_variant_print(in, TRUE));
-	org_neard_tag__call_write_sync(tagProp->proxy, in, NULL, &gerror);
+	org_neard_tag__call_write(tagProp->proxy, in, NULL,
+					write_completed_cb, NULL);
 
 exit:
 	if (gerror != NULL) {

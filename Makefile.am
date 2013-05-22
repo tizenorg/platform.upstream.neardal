@@ -3,7 +3,7 @@ EXTRA_DIST = neardal.pc.in
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = neardal.pc
 
-SUBDIRS = lib ncl
+SUBDIRS = lib
 
 #Rule to generate doxygen documentation
 if HAVE_DOXYGEN

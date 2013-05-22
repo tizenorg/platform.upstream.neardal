@@ -80,8 +80,7 @@ errorCode_t neardal_tag_prv_get_record(TagProp *tagProp, gchar *rcdName,
 /*****************************************************************************
  * neardal_tag_prv_get_raw_NDEF: Get specific record from tag
  ****************************************************************************/
-errorCode_t neardal_tag_prv_get_raw_NDEF(TagProp *tagProp, gchar **NDEF
-					, gsize *len);
+errorCode_t neardal_tag_prv_get_raw_NDEF(TagProp *tagProp);
 
 #ifdef __cplusplus
 }

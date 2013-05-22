@@ -256,6 +256,30 @@ errorCode_t neardal_set_cb_power_completed(power_cb cb_power_completed,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_read_completed(read_cb cb_read_completed,
+					void *user_data)
+{
+	neardalMgr.cb.read_completed		= cb_read_completed;
+	neardalMgr.cb.read_completed_ud		= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
+errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
+					void *user_data)
+{
+	neardalMgr.cb.write_completed		= cb_write_completed;
+	neardalMgr.cb.write_completed_ud	= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 /*****************************************************************************
  * neardal_free_array: free adapters array, tags array or records array
  ****************************************************************************/
@@ -852,8 +876,7 @@ exit:
 /*****************************************************************************
  * neardal_tag_get_rawNDEF: Get tag's NDEF as a raw bytes stream
  ****************************************************************************/
-errorCode_t neardal_tag_get_rawNDEF(const char *tagName, char **rawNDEF
-				    , int *len)
+errorCode_t neardal_tag_get_rawNDEF(const char *tagName)
 {
 	errorCode_t	err		= NEARDAL_SUCCESS;
 	AdpProp		*adpProp	= NULL;
@@ -862,7 +885,7 @@ errorCode_t neardal_tag_get_rawNDEF(const char *tagName, char **rawNDEF
 	if (neardalMgr.proxy == NULL)
 		neardal_prv_construct(&err);
 
-	if (err != NEARDAL_SUCCESS || tagName == NULL || rawNDEF == NULL)
+	if (err != NEARDAL_SUCCESS || tagName == NULL)
 		goto exit;
 
 	err = neardal_mgr_prv_get_adapter((gchar *) tagName, &adpProp);
@@ -873,7 +896,7 @@ errorCode_t neardal_tag_get_rawNDEF(const char *tagName, char **rawNDEF
 	if (err != NEARDAL_SUCCESS)
 		goto exit;
 
-	err = neardal_tag_prv_get_raw_NDEF(tagProp, rawNDEF, (gsize *) len);
+	err = neardal_tag_prv_get_raw_NDEF(tagProp);
 
 exit:
 	return err;
