@@ -280,6 +280,18 @@ errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_push_completed(push_cb cb_push_completed,
+					void *user_data)
+{
+	neardalMgr.cb.push_completed		= cb_push_completed;
+	neardalMgr.cb.push_completed_ud		= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 /*****************************************************************************
  * neardal_free_array: free adapters array, tags array or records array
  ****************************************************************************/
@@ -1110,6 +1122,8 @@ errorCode_t neardal_dev_push(neardal_record *record)
 	AdpProp		*adpProp;
 	DevProp		*devProp;
 	RcdProp		rcd;
+	GVariantBuilder	*builder;
+	guint32		count;
 
 
 	if (neardalMgr.proxy == NULL)
@@ -1135,6 +1149,19 @@ errorCode_t neardal_dev_push(neardal_record *record)
 	rcd.uri			= (gchar *) record->uri;
 	rcd.uriObjSize		= record->uriObjSize;
 	rcd.mime		= (gchar *) record->mime;
+
+	if (record->rawNDEF != NULL && record->rawNDEFSize > 0) {
+
+		builder = g_variant_builder_new(G_VARIANT_TYPE("ay"));
+
+		for (count = 0; count < record->rawNDEFSize; count++)
+			g_variant_builder_add(builder, "y",
+						record->rawNDEF[count]);
+
+		rcd.rawNDEF = g_variant_new("ay", builder);
+		g_variant_builder_unref(builder);
+	}
+
 
 	neardal_dev_prv_push(devProp, &rcd);
 exit:

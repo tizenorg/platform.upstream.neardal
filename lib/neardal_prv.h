@@ -86,6 +86,9 @@ typedef struct {
 
 	write_cb	write_completed;
 	void		*write_completed_ud;
+
+	push_cb		push_completed;
+	void		*push_completed_ud;
 } neardalCb;
 
 /* NEARDAL context */

@@ -13,6 +13,9 @@
 		<method name="Push">
 			<arg name="attributes" type="a{sv}" direction="in"/>
 		</method>
+		<method name="DumpRawNDEF">
+			<arg name="NDEF" type="ay" direction="out"/>
+		</method>
 		<signal name="PropertyChanged">
 			<arg name="name" type="s"/>
 			<arg name="value" type="v"/>
