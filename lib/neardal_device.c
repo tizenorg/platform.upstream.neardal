@@ -210,6 +210,34 @@ void neardal_dev_notify_dev_found(DevProp *devProp)
 		}
 }
 
+static void push_completed_cb(GObject *source_object,
+				GAsyncResult *res, gpointer user_data)
+{
+	GError		*gerror		= NULL;
+	errorCode_t     err		= NEARDAL_SUCCESS;
+
+	NEARDAL_TRACE("Push Completed!");
+
+	*(GVariant **)user_data = g_dbus_proxy_call_finish(
+					G_DBUS_PROXY(source_object),
+					res, &gerror);
+
+	if (gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+		"Unable to write device NDEF as a raw bytes stream(%d:%s)\n",
+				 gerror->code, gerror->message);
+		g_error_free(gerror);
+		err = NEARDAL_ERROR_DBUS;
+	}
+
+	if (user_data != NULL)
+		g_variant_builder_unref((GVariantBuilder *)user_data);
+
+	if (neardalMgr.cb.push_completed != NULL)
+		neardalMgr.cb.push_completed(err,
+				neardalMgr.cb.push_completed_ud);
+}
+
 /*****************************************************************************
  * neardal_dev_prv_push: Creates and write NDEF record to be pushed to
  * an NFC device
@@ -219,7 +247,6 @@ errorCode_t neardal_dev_prv_push(DevProp *devProp, RcdProp *rcd)
 	GVariantBuilder	*builder = NULL;
 	GVariant	*in;
 	errorCode_t	err;
-	GError		*gerror	= NULL;
 
 	NEARDAL_ASSERT_RET(devProp != NULL, NEARDAL_ERROR_INVALID_PARAMETER);
 
@@ -234,18 +261,10 @@ errorCode_t neardal_dev_prv_push(DevProp *devProp, RcdProp *rcd)
 
 	in = g_variant_builder_end(builder);
 	NEARDAL_TRACE_LOG("Sending:\n%s\n", g_variant_print(in, TRUE));
-	org_neard_dev__call_push_sync(devProp->proxy, in, NULL, &gerror);
+	org_neard_dev__call_push(devProp->proxy, in,
+				NULL, push_completed_cb, builder);
 
 exit:
-	if (gerror != NULL) {
-		NEARDAL_TRACE_ERR("Unable to write dev record (%d:%s)\n",
-				 gerror->code, gerror->message);
-		g_error_free(gerror);
-		err = NEARDAL_ERROR_DBUS;
-	}
-	if (builder != NULL)
-		g_variant_builder_unref(builder);
-
 	return err;
 }
 
