@@ -38,7 +38,7 @@ static void neardal_dev_prv_cb_property_changed(orgNeardDev *proxy,
 						GVariant *arg_unnamed_arg1,
 						void		*user_data)
 {
-	errorCode_t	err		= NEARDAL_SUCCESS;
+	GError		*gerror		= NULL;
 	DevProp		*devProp	= user_data;
 
 	(void) proxy; /* remove warning */
@@ -54,10 +54,27 @@ static void neardal_dev_prv_cb_property_changed(orgNeardDev *proxy,
 		       g_variant_print (arg_unnamed_arg1, TRUE),
 		       g_variant_get_type_string(arg_unnamed_arg1));
 
+	if (!g_strcmp0(arg_unnamed_arg0, "Records")) {
+		GVariant *ret;
+		ret = g_dbus_proxy_call_sync(G_DBUS_PROXY(proxy),
+						"DumpRawNDEF",
+						g_variant_new("()"),
+						G_DBUS_CALL_FLAGS_NONE,
+						-1, NULL, &gerror);
+		if (gerror != NULL) {
+			NEARDAL_TRACE_ERR(
+			"Unable to dump raw p2p data (%d:%s)\n",
+				 gerror->code, gerror->message);
+			g_error_free(gerror);
 
-	if (err != NEARDAL_SUCCESS) {
-		NEARDAL_TRACE_ERR("Exit with error code %d:%s\n", err,
-				neardal_error_get_text(err));
+			return;
+		}
+
+		if (neardalMgr.cb.p2p_received != NULL)
+			neardalMgr.cb.p2p_received(ret,
+						neardalMgr.cb.p2p_received_ud);
+
+		g_variant_unref(ret);
 	}
 
 	return;
