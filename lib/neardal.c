@@ -292,6 +292,18 @@ errorCode_t neardal_set_cb_push_completed(push_cb cb_push_completed,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_p2p_received(p2p_cb cb_p2p_received,
+					void *user_data)
+{
+	neardalMgr.cb.p2p_received		= cb_p2p_received;
+	neardalMgr.cb.p2p_received_ud		= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 /*****************************************************************************
  * neardal_free_array: free adapters array, tags array or records array
  ****************************************************************************/
