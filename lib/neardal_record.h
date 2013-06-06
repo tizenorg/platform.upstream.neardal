@@ -45,6 +45,7 @@ typedef struct {
 	gsize		uriObjSize;
 	gchar		*mime;
 	GVariant	*rawNDEF;
+	gchar		*carrier;
 } RcdProp;
 
 /*****************************************************************************

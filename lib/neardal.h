@@ -131,6 +131,8 @@ typedef struct {
 	unsigned char	*rawNDEF;
 /*! @brief The NDEF raw size */
 	unsigned int	rawNDEFSize;
+/*! @brief The Handover Carrier  type */
+	const char	*carrier;
 } neardal_record;
 
 /* @}*/
