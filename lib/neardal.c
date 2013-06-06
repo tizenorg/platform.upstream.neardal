@@ -961,6 +961,7 @@ errorCode_t neardal_tag_write(neardal_record *record)
 	rcd.uri			= (gchar *) record->uri;
 	rcd.uriObjSize		= record->uriObjSize;
 	rcd.mime		= (gchar *) record->mime;
+	rcd.carrier		= (gchar *) record->carrier;
 
 	if (record->rawNDEF != NULL && record->rawNDEFSize > 0) {
 
@@ -1161,6 +1162,7 @@ errorCode_t neardal_dev_push(neardal_record *record)
 	rcd.uri			= (gchar *) record->uri;
 	rcd.uriObjSize		= record->uriObjSize;
 	rcd.mime		= (gchar *) record->mime;
+	rcd.carrier		= (gchar *) record->carrier;
 
 	if (record->rawNDEF != NULL && record->rawNDEFSize > 0) {
 
@@ -1172,10 +1174,11 @@ errorCode_t neardal_dev_push(neardal_record *record)
 
 		rcd.rawNDEF = g_variant_new("ay", builder);
 		g_variant_builder_unref(builder);
-	}
+	} else
+		rcd.rawNDEF = NULL;
 
 
-	neardal_dev_prv_push(devProp, &rcd);
+	err = neardal_dev_prv_push(devProp, &rcd);
 exit:
 	return err;
 }
@@ -1258,6 +1261,7 @@ void neardal_free_record(neardal_record *record)
 	g_free((gpointer) record->uri);
 	g_free((gpointer) record->mime);
 	g_free((gpointer) record->rawNDEF);
+	g_free((gpointer) record->carrier);
 
 	/* Freeing record struct */
 	g_free(record);
