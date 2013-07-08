@@ -1,2 +1,10 @@
+* Wed Jul 10 2013 Arron Wang <arron.wang@intel.com> submit/tizen/20130710.021225@d088d4e
+- Fix the rpmlint warning
+- Enable tizen dlog log system
+- Add handover carrier type support
+- Add p2p received callback
+- Add raw data push support
+- Use async call for ndef read/write
+
 * Wed Aug 15 2012 Arron <arron.wang@intel.com> - 0.7
 - Init import for Tizen
