@@ -6,19 +6,19 @@
 %define glib2_version   		2.30.0
 # << macros
 
-Name: neardal-tizen
+Name: neardal
 Summary: Neard Abstraction Library (for Neard v0.7)
 Version: 0.7.0
 Release: 1.0
-Group: System/Libraries
-License: LGPLv2
+Group: Connectivity/NFC
+License: LGPL-2.0
 URL: https://github.com/connectivity/neardal.git
 Source0: %{name}-%{version}.tar.bz2
 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires: python
-BuildRequires: intltool >= %{intltool_version}
+BuildRequires: intltool
 BuildRequires: libtool
 BuildRequires: automake
 BuildRequires: autoconf
@@ -42,21 +42,12 @@ make
 
 %package devel
 Summary:    Headers for neardal
-Group:      Development/Libraries
+Group:      Development/Building
 Requires:   %{name} = %{version}-%{release}
 
 
 %description devel
 Development headers and libraries for neardal
-
-%package ncl
-Summary:    Neardal Command Line: Simple command line interpretor for neardal/Neard
-Group:      Tools
-Requires:   %{name} = %{version}-%{release}
-
-
-%description ncl
-Neardal Command Line: Simple command line interpretor for neardal/Neard
 
 %install
 rm -rf %{buildroot}
@@ -76,7 +67,8 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
+%license COPYING
+%doc README AUTHORS NEWS
 
 # libraries files
 %{neardal_dir}/libneardal.so
@@ -90,6 +82,3 @@ rm -rf %{buildroot}
 %{neardal_inc}/*.h
 # pkg-config files
 %{neardal_pkg}/neardal.pc
-
-%files ncl
-#%{_bindir}/ncl
