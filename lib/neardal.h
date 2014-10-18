@@ -189,6 +189,7 @@ typedef void (*dev_cb) (const char *devName, void *user_data);
  * @param user_data Client user data
  **/
 typedef void (*record_cb) (const char *rcdName, void *user_data);
+typedef void (*power_cb) (errorCode_t error, void *user_data);
 
 /**
  * @brief Callback prototype for a registered tag type
@@ -572,6 +573,8 @@ void neardal_free_record(neardal_record *record);
 errorCode_t neardal_set_cb_record_found(record_cb cb_rcd_found,
 					 void *user_data);
 
+errorCode_t neardal_set_cb_power_completed(power_cb cb_power_completed,
+					void *user_data);
 /*! \fn errorCode_t neardal_agent_set_NDEF_cb(char *tagType, agent_cb cb_agent,
  * void *user_data)
  * @brief register or unregister a callback to handle a record macthing
