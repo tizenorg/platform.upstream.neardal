@@ -40,7 +40,9 @@ void neardal_free_record(neardal_record *record) \
 GVariant *neardal_record_to_g_variant(neardal_record *in)
 {
 	GVariantBuilder b;
+	GVariantBuilder *tmp, *rawNDEF;
 	GVariant *out;
+	guint32 count;
 
 	g_variant_builder_init(&b, G_VARIANT_TYPE_ARRAY);
 
@@ -62,6 +64,20 @@ GVariant *neardal_record_to_g_variant(neardal_record *in)
 	NEARDAL_G_VARIANT_IN(&b, "{'Encryption', <%s>}", in->encryption);
 
 	NEARDAL_G_VARIANT_IN(&b, "{'URI', <%s>}", in->uri);
+
+	if (in->rawNDEF != NULL && in->rawNDEFSize > 0) {
+
+		tmp = g_variant_builder_new(G_VARIANT_TYPE("ay"));
+
+		for (count = 0; count < in->rawNDEFSize; count++)
+			g_variant_builder_add(tmp, "y",
+						in->rawNDEF[count]);
+
+		rawNDEF = g_variant_new("ay", tmp);
+
+		g_variant_builder_add(&b, "{sv}", "NDEF", rawNDEF);
+		g_variant_builder_unref(tmp);
+	}
 
 	out = g_variant_builder_end(&b);
 

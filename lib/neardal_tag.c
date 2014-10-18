@@ -200,6 +200,75 @@ void neardal_tag_notify_tag_found(TagProp *tagProp)
 		}
 }
 
+static void read_completed_cb(GObject *source_object,
+				GAsyncResult *res, gpointer user_data)
+{
+	GError		*gerror		= NULL;
+	GVariant	*ret		= NULL;
+	NEARDAL_TRACE("Read Completed!");
+
+	ret = g_dbus_proxy_call_finish(G_DBUS_PROXY(source_object),
+							res, &gerror);
+
+	if (gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+		"Unable to read tag's NDEF as a raw bytes stream(%d:%s)\n",
+				 gerror->code, gerror->message);
+		g_error_free(gerror);
+		return;
+	}
+
+	if (neardalMgr.cb.read_completed != NULL)
+		neardalMgr.cb.read_completed(ret,
+				neardalMgr.cb.read_completed_ud);
+
+	g_variant_unref(ret);
+}
+
+/*****************************************************************************
+ * neardal_tag_get_rawNDEF: Get tag's NDEF as a raw bytes stream
+ ****************************************************************************/
+errorCode_t neardal_tag_get_rawNDEF(const char *tagName)
+{
+	errorCode_t	err		= NEARDAL_SUCCESS;
+	TagProp		*tag		= NULL;
+
+	NEARDAL_ASSERT_RET(tagName != NULL, NEARDAL_ERROR_INVALID_PARAMETER);
+
+	neardal_prv_construct(&err);
+	if (err != NEARDAL_SUCCESS)
+		return err;
+
+	if (!(tag = neardal_mgr_tag_search(tagName)))
+		return NEARDAL_ERROR_NO_TAG;
+
+	org_neard_tag_call_get_raw_ndef(tag->proxy, NULL,
+					read_completed_cb, NULL);
+
+	return err;
+}
+
+static void write_completed_cb(GObject *source_object,
+					GAsyncResult *res, gpointer user_data)
+{
+	errorCode_t	err = NEARDAL_SUCCESS;
+	NEARDAL_TRACE("Write Completed!");
+
+	g_dbus_proxy_call_finish(G_DBUS_PROXY(source_object),
+					res, &neardalMgr.gerror);
+	if (neardalMgr.gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+			"DBUS Error (%d): %s\n",
+				 neardalMgr.gerror->code,
+				neardalMgr.gerror->message);
+		err = NEARDAL_ERROR_DBUS;
+	}
+
+	if (neardalMgr.cb.write_completed != NULL)
+		neardalMgr.cb.write_completed(err,
+				neardalMgr.cb.write_completed_ud);
+}
+
 errorCode_t neardal_tag_write(neardal_record *record)
 {
 	GError		*gerror	= NULL;
@@ -218,12 +287,7 @@ errorCode_t neardal_tag_write(neardal_record *record)
 
 	in = neardal_record_to_g_variant(record);
 
-	if (org_neard_tag_call_write_sync(tag->proxy, in, NULL, &gerror)
-			== FALSE) {
-		NEARDAL_TRACE_ERR("Can't write record: %s\n", gerror->message);
-		g_error_free(gerror);
-		err = NEARDAL_ERROR_DBUS;
-	}
+	org_neard_tag_call_write(tag->proxy, in, NULL, write_completed_cb, NULL);
 
 	return err;
 }

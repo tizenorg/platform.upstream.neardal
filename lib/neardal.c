@@ -257,6 +257,30 @@ errorCode_t neardal_set_cb_power_completed(power_cb cb_power_completed,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_read_completed(read_cb cb_read_completed,
+					void *user_data)
+{
+	neardalMgr.cb.read_completed		= cb_read_completed;
+	neardalMgr.cb.read_completed_ud		= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
+errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
+					void *user_data)
+{
+	neardalMgr.cb.write_completed		= cb_write_completed;
+	neardalMgr.cb.write_completed_ud	= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 errorCode_t neardal_free_array(char ***array)
 {
 	if (array == NULL || *array == NULL)

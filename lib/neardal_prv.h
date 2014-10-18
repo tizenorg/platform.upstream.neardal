@@ -78,6 +78,12 @@ typedef struct {
 							'tag record found'*/
 	power_cb	power_completed;
 	void		*power_completed_ud;
+
+	read_cb		read_completed;
+	void		*read_completed_ud;
+
+	write_cb	write_completed;
+	void		*write_completed_ud;
 } neardalCb;
 
 /* NEARDAL context */

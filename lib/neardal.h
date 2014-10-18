@@ -129,10 +129,12 @@ typedef struct {
 	char *authentication;	/**< WiFi Authentication. */
 
 	char *uri;		/**< URI including scheme and resource. */
+	unsigned char *rawNDEF; /**< The raw NDEF type data */
 
 	/* Keep uriObjSize first after contiguous array of pointers. */
 
 	unsigned int uriObjSize;/**< URI object size. */
+	unsigned int rawNDEFSize;	/**< The size of rawNDEF data */
 } neardal_record;
 
 /* @}*/
@@ -190,6 +192,8 @@ typedef void (*dev_cb) (const char *devName, void *user_data);
  **/
 typedef void (*record_cb) (const char *rcdName, void *user_data);
 typedef void (*power_cb) (errorCode_t error, void *user_data);
+typedef void (*read_cb) (GVariant *ret, void *user_data);
+typedef void (*write_cb) (errorCode_t error, void *user_data);
 
 /**
  * @brief Callback prototype for a registered tag type
@@ -456,6 +460,7 @@ errorCode_t neardal_get_tag_properties(const char *tagName,
  * @return errorCode_t error code
  **/
 errorCode_t neardal_tag_write(neardal_record *record);
+errorCode_t neardal_tag_get_rawNDEF(const char *tagName);
 
 /*! \fn void neardal_free_tag(neardal_tag *tag)
  * @brief Release memory allocated for properties of a tag
@@ -574,6 +579,10 @@ errorCode_t neardal_set_cb_record_found(record_cb cb_rcd_found,
 					 void *user_data);
 
 errorCode_t neardal_set_cb_power_completed(power_cb cb_power_completed,
+					void *user_data);
+errorCode_t neardal_set_cb_read_completed(read_cb cb_read_completed,
+					void *user_data);
+errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
 					void *user_data);
 /*! \fn errorCode_t neardal_agent_set_NDEF_cb(char *tagType, agent_cb cb_agent,
  * void *user_data)
