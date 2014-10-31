@@ -6,6 +6,7 @@ Group:   Network & Connectivity/NFC
 License: LGPL-2.0
 URL:     https://github.com/connectivity/neardal.git
 Source0: %{name}-%{version}.tar.bz2
+Source1001: %{name}.manifest
 
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -25,6 +26,7 @@ This package provides simple C APIs to exchange datas with NFC daemon (Neard) pr
 
 %prep
 %setup -q -n %{name}-%{version}
+cp %{SOURCE1001} .
 
 %build
 %reconfigure --disable-traces --prefix=/usr
@@ -33,7 +35,6 @@ This package provides simple C APIs to exchange datas with NFC daemon (Neard) pr
 %package devel
 Summary:    Headers for neardal
 Requires:   %{name} = %{version}-%{release}
-
 
 %description devel
 Development headers and libraries for neardal.
@@ -48,13 +49,14 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %license COPYING
 %doc README AUTHORS
 %{_libdir}/libneardal.so.0
 %{_libdir}/libneardal.so.0.0.1
 
 %files devel
+%manifest %{name}.manifest
 %{_includedir}/neardal/*.h
 %{_libdir}/pkgconfig/neardal.pc
 %{_libdir}/libneardal.so
-
