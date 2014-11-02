@@ -63,9 +63,32 @@ void neardal_dev_notify_dev_found(DevProp *devProp)
 		}
 }
 
+static void push_completed_cb(GObject *source_object,
+				GAsyncResult *res, gpointer user_data)
+{
+	GError		*gerror		= NULL;
+	errorCode_t     err		= NEARDAL_SUCCESS;
+
+	NEARDAL_TRACE("Push Completed!");
+
+	g_dbus_connection_call_finish(neardalMgr.conn,
+					res, &gerror);
+
+	if (gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+		"Unable to write device NDEF as a raw bytes stream(%d:%s)\n",
+				 gerror->code, gerror->message);
+		g_error_free(gerror);
+		err = NEARDAL_ERROR_DBUS;
+	}
+
+	if (neardalMgr.cb.push_completed != NULL)
+		neardalMgr.cb.push_completed(err,
+				neardalMgr.cb.push_completed_ud);
+}
+
 errorCode_t neardal_dev_push(neardal_record *record)
 {
-	GError		*gerror	= NULL;
 	errorCode_t	err;
 	GVariant	*in;
 
@@ -75,7 +98,7 @@ errorCode_t neardal_dev_push(neardal_record *record)
 
 	in = neardal_record_to_g_variant(record);
 
-	g_dbus_connection_call_sync(neardalMgr.conn,
+	g_dbus_connection_call(neardalMgr.conn,
 					"org.neard",
                                         record->name,
                                         "org.neard.Device",
@@ -85,12 +108,8 @@ errorCode_t neardal_dev_push(neardal_record *record)
                                         G_DBUS_CALL_FLAGS_NONE,
                                         3000, /* 3 secs */
                                         NULL,
-                                        &gerror);
-	if (gerror) {
-		NEARDAL_TRACE_ERR("Can't push record: %s\n", gerror->message);
-		g_error_free(gerror);
-		err = NEARDAL_ERROR_DBUS_CANNOT_INVOKE_METHOD;
-	}
+					push_completed_cb,
+					NULL);
 exit:
 	return err;
 }

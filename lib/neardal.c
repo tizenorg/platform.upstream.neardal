@@ -281,6 +281,18 @@ errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
 	return NEARDAL_SUCCESS;
 }
 
+errorCode_t neardal_set_cb_push_completed(push_cb cb_push_completed,
+					void *user_data)
+{
+	neardalMgr.cb.push_completed		= cb_push_completed;
+	neardalMgr.cb.push_completed_ud		= user_data;
+
+	if (neardalMgr.proxy == NULL)
+		neardal_prv_construct(NULL);
+
+	return NEARDAL_SUCCESS;
+}
+
 errorCode_t neardal_free_array(char ***array)
 {
 	if (array == NULL || *array == NULL)
