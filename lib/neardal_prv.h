@@ -87,6 +87,9 @@ typedef struct {
 
 	push_cb		push_completed;
 	void		*push_completed_ud;
+
+	p2p_cb		p2p_received;
+	void		*p2p_received_ud;
 } neardalCb;
 
 /* NEARDAL context */

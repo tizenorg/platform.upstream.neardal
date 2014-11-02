@@ -195,6 +195,7 @@ typedef void (*power_cb) (errorCode_t error, void *user_data);
 typedef void (*read_cb) (GVariant *ret, void *user_data);
 typedef void (*write_cb) (errorCode_t error, void *user_data);
 typedef void (*push_cb) (errorCode_t error, void *user_data);
+typedef void (*p2p_cb) (GVariant *ret, void *user_data);
 
 /**
  * @brief Callback prototype for a registered tag type
@@ -586,6 +587,8 @@ errorCode_t neardal_set_cb_read_completed(read_cb cb_read_completed,
 errorCode_t neardal_set_cb_write_completed(write_cb cb_write_completed,
 					void *user_data);
 errorCode_t neardal_set_cb_push_completed(push_cb cb_push_completed,
+					void *user_data);
+errorCode_t neardal_set_cb_p2p_received(p2p_cb cb_p2p_received,
 					void *user_data);
 /*! \fn errorCode_t neardal_agent_set_NDEF_cb(char *tagType, agent_cb cb_agent,
  * void *user_data)

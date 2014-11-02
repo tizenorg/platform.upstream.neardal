@@ -110,6 +110,50 @@ static AdpProp *neardal_adapter_find_by_child(const char *path)
 	return adapter;
 }
 
+static errorCode_t neardal_p2p_received(const gchar *path)
+{
+	NEARDAL_TRACEIN();
+	GError		*gerror	= NULL;
+	errorCode_t	err;
+	char *device_path = neardal_dirname(path);
+	GVariant	*ret;
+
+	neardal_prv_construct(&err);
+	if (err != NEARDAL_SUCCESS)
+		goto exit;
+
+	ret = g_dbus_connection_call_sync(neardalMgr.conn,
+					"org.neard",
+					device_path,
+					"org.neard.Device",
+					"DumpRawNDEF",
+					g_variant_new("()"),
+					NULL,
+					G_DBUS_CALL_FLAGS_NONE,
+					3000, /* 3 secs */
+					NULL,
+					&gerror);
+
+	if (gerror != NULL) {
+		NEARDAL_TRACE_ERR(
+		"Unable to dump raw p2p data (%d:%s)\n",
+			 gerror->code, gerror->message);
+		g_error_free(gerror);
+		err = NEARDAL_ERROR_DBUS_CANNOT_INVOKE_METHOD;
+
+		goto exit;
+	}
+
+	if (neardalMgr.cb.p2p_received != NULL)
+		neardalMgr.cb.p2p_received(ret,
+					neardalMgr.cb.p2p_received_ud);
+
+	g_variant_unref(ret);
+
+exit:
+	return err;
+}
+
 static void neardal_mgr_interfaces_added(ObjectManager *om,
 					const gchar *path, GVariant *interfaces)
 {
@@ -123,6 +167,10 @@ static void neardal_mgr_interfaces_added(ObjectManager *om,
 		GVariant *record;
 		if ((record = neardal_data_insert(path, "Record", v)))
 			neardal_record_add(record);
+
+		if (strstr(path, "device") != NULL)
+			neardal_p2p_received(path);
+
 		return;
 	}
 
