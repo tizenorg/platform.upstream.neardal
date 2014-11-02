@@ -73,6 +73,12 @@ AC_SEARCH_LIBS([rl_initialize], [edit readline],
 		[CPPFLAGS="-DHAVE_LIBEDIT $CPPFLAGS"])],
 	[AC_MSG_ERROR(editline or readline is required)])
 
+PKG_CHECK_MODULES(DLOG, dlog, dummy=yes, AC_MSG_ERROR(dlog is required))
+AC_SUBST(DLOG_CFLAGS)
+AC_SUBST(DLOG_LIBS)
+LDFLAGS="$LDFLAGS -ldlog"
+CFLAGS="$CFLAGS -I/usr/include/dlog"
+
 AC_PATH_TOOL([DOXYGEN], [doxygen])
 AM_CONDITIONAL([HAVE_DOXYGEN], [test ! -z "$DOXYGEN"])
 AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doxygen.cfg])])
