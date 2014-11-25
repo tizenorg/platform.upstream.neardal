@@ -31,7 +31,7 @@ void neardal_record_free(neardal_record *r)
 {
 	g_return_if_fail(r);
 	neardal_g_strfreev((void **) r, &r->uriObjSize);
-	memset(r, 0, sizeof(*r));
+	r = NULL;
 }
 
 void neardal_free_record(neardal_record *record) \
@@ -114,7 +114,10 @@ void neardal_record_add(GVariant *record)
 
 	neardal_g_variant_dump(record);
 
-	neardalMgr.cb.rcd_found(neardal_g_variant_get(record, "Name", "&s"),
+
+	if (neardalMgr.cb.rcd_found != NULL)
+		neardalMgr.cb.rcd_found(
+				neardal_g_variant_get(record, "Name", "&s"),
 				neardalMgr.cb.rcd_found_ud);
 }
 
