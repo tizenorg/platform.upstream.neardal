@@ -11,13 +11,13 @@ Summary: Neard Abstraction Library (for Neard v0.7)
 Version: 0.7.0
 Release: 1.0
 Group: System/Libraries
-License: LGPLv2
+License: LGPL-2.0
 URL: https://github.com/connectivity/neardal.git
 Source0: %{name}-%{version}.tar.bz2
 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-BuildRequires: python 
+BuildRequires: python
 BuildRequires: intltool >= %{intltool_version}
 BuildRequires: libtool
 BuildRequires: automake
